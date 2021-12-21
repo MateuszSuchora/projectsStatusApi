@@ -1,0 +1,130 @@
+{% load socialaccount %}
+{% load account %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <title>Title</title>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+{% if user.is_authenticated %}
+    <div id="app">
+    <v-app>
+        <v-card-title>
+            <h2>Repos list:</h2>
+        </v-card-title>
+         <v-data-table :headers="headers" calculate-widths="true" :items="repos" :options.sync="options" :server-items-length="allRepos" :footer-props="{
+                            'items-per-page-options':[ 10,50,100,-1],
+                            'items-per-page-text':'Wiersze na stronie:',
+                            'items-per-page-all-text': 'Wszystkie',
+                         }">
+             <template v-slot:item.is_private="{item}">
+                 <v-icon small  v-if="item.is_private" v-model="item.is_private" color="#009006" style = "margin-left: 15px" >
+                     mdi-circle
+                 </v-icon>
+                 <v-icon small  v-else color="#245f9c" style = "margin-left: 15px" >
+                     mdi-circle
+                 </v-icon>
+             </template>
+             <template v-slot:item.details="{item}">
+                 <button @click="goToSite(item.details)" class="waves-effect waves-light btn button-padding">&gt;</button>
+             </template>
+         </v-data-table>
+    </v-app>
+    </div>
+    <div>
+Hi: {% user_display user %}
+{% for post in repos %}
+    {{ post.title }}
+    {{ post.content }}
+    </div>>
+{% endfor %}
+{% else %}
+<p>Please <a href="{% provider_login_url 'github' %}">Authenticate with GitHub</a></p>
+{% endif %}
+
+
+
+</body>
+
+<script>
+    var app = new Vue({
+      delimiters: ['[[', ']]'],
+      el: '#app',
+      vuetify: new Vuetify({
+            theme: {
+                themes: {
+                    light: {
+                        primary: '#009999',
+                    }
+                }
+            },
+        }),
+      data: {
+          message: 'Hello Vue!',
+          headers: [
+                    {
+                        text: 'Name',
+                        value: 'name',
+                        width: '10%'
+                    },
+                    {
+                        text: 'Owner',
+                        value: 'owner',
+                        width: '10%'
+                    },
+                    {
+                        text: 'Programming language',
+                        value: 'programming_language',
+                        width: '10%'
+                    },
+                    {
+                        text: 'Stars',
+                        value: 'stars',
+                        width: '7%'
+                    },
+
+              {
+                        text: 'Last update',
+                        value: 'last_update',
+                        width: '7%'
+                    },
+                    {
+                        text: 'Is private',
+                        value: 'is_private',
+                        width: '7%'
+                    },
+                    {
+                        text: 'Details',
+                        value: 'details',
+                        sortable: false,
+                        width: '7%'
+                    },
+
+                ],
+                repos: [{
+                        name: 'first',
+                        owner:'MateuszSuchora',
+                        programming_language: 'python',
+                        stars: '5',
+                        last_update: '2021-12-21',
+                        is_private: true,
+                        details: '-',
+                    },
+                ],
+          allRepos: 1,
+      },
+      methods: {
+          greet: function(name) {
+              console.log('Hello from ' + name + '!')
+          }
+      }
+    });
+  </script>
+</html>

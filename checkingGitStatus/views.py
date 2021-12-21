@@ -1,3 +1,6 @@
-from django.shortcuts import render
+from django.views.generic import ListView
+from .models import Repo
 
-# Create your views here.
+
+class RepoListView(ListView):
+    model = Repo
