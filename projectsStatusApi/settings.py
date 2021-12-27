@@ -135,6 +135,6 @@ AUTHENTICATION_BACKENDS = (
 )
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 
-LOGIN_REDIRECT_URL = reverse_lazy('posts:post-list')
+LOGIN_REDIRECT_URL = reverse_lazy('repos:repo_list')
 
 SITE_ID = 1

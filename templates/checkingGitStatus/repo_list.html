@@ -1,21 +1,32 @@
 {% load socialaccount %}
 {% load account %}
-
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
     <title>Title</title>
 </head>
 <body>
-<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+
 {% if user.is_authenticated %}
     <div id="app">
     <v-app>
+        <div>
+            <p>
+                LogIn as: {% user_display user %} <a href="/accounts/logout">Log out</a>
+            </p>
+        </div>
+        <div>
+            <p>
+                 <a href="/repos/add/">Add repo</a>
+            </p>
+        </div>
         <v-card-title>
             <h2>Repos list:</h2>
         </v-card-title>
@@ -38,13 +49,7 @@
          </v-data-table>
     </v-app>
     </div>
-    <div>
-Hi: {% user_display user %}
-{% for post in repos %}
-    {{ post.title }}
-    {{ post.content }}
-    </div>>
-{% endfor %}
+
 {% else %}
 <p>Please <a href="{% provider_login_url 'github' %}">Authenticate with GitHub</a></p>
 {% endif %}
@@ -68,6 +73,9 @@ Hi: {% user_display user %}
         }),
       data: {
           message: 'Hello Vue!',
+          options: {
+                    itemsPerPage: -1,
+                },
           headers: [
                     {
                         text: 'Name',
@@ -120,10 +128,52 @@ Hi: {% user_display user %}
                 ],
           allRepos: 1,
       },
+         mounted() {
+            this.getData();
+            this.checkRepo();
+        },
       methods: {
           greet: function(name) {
               console.log('Hello from ' + name + '!')
+          },
+          async getData() {
+                let url = 'getRepos/';
+                let parameters = {
+                    search: this.message, // for future (had plans to do that)
+                };
+                await axios.post(url, parameters, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                    .then(response => (
+                        console.log(response.data)
+                        ))
+                    .catch(function(error) {
+                        console.log(error);
+                    });
+            },
+          checkRepo(){
+              let url = 'https://api.github.com/users/{% user_display user %}/repos';
+                let parameters = {
+                    search: this.message, // for future (had plans to do that)
+                };
+                axios.get(url, parameters, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*',
+                        }
+                    })
+                    .then(response => (
+                        console.log(response.data)
+                        ))
+                    .catch(function(error) {
+                        console.log(error);
+                    });
           }
+
       }
     });
   </script>
