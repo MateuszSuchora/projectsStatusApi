@@ -44,7 +44,7 @@
                  </v-icon>
              </template>
              <template v-slot:item.details="{item}">
-                 <button @click="goToSite(item.details)" class="waves-effect waves-light btn button-padding">&gt;</button>
+                  <a :href="'https://api.github.com/repos/' + item.owner + '/' + item.name">&gt;</a>
              </template>
          </v-data-table>
     </v-app>
@@ -73,6 +73,7 @@
         }),
       data: {
           message: 'Hello Vue!',
+          token: '',
           options: {
                     itemsPerPage: -1,
                 },
@@ -116,25 +117,20 @@
                     },
 
                 ],
-                repos: [{
-                        name: 'first',
-                        owner:'MateuszSuchora',
-                        programming_language: 'python',
-                        stars: '5',
-                        last_update: '2021-12-21',
-                        is_private: true,
-                        details: '-',
-                    },
-                ],
+                repos: [],
           allRepos: 1,
       },
          mounted() {
             this.getData();
-            this.checkRepo();
         },
       methods: {
           greet: function(name) {
               console.log('Hello from ' + name + '!')
+          },
+          getBasicInfos(repos_list){
+                 for (let i = 0; i < repos_list.length; i++) {
+                        this.checkRepo(repos_list[i]['name'], repos_list[i]['owner'])
+                 }
           },
           async getData() {
                 let url = 'getRepos/';
@@ -149,24 +145,34 @@
                         }
                     })
                     .then(response => (
-                        console.log(response.data)
+                        console.log(response.data), this.token = response.data['token'], this.getBasicInfos(response.data['repos_list'])
                         ))
                     .catch(function(error) {
                         console.log(error);
                     });
             },
-          checkRepo(){
-              let url = 'https://api.github.com/users/{% user_display user %}/repos';
-                let parameters = {
-                    search: this.message, // for future (had plans to do that)
-                };
-                axios.get(url, parameters, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*',
-                        }
+          async checkRepo(repo_name, owner){
+              let current_token = 'token ' + this.token;
+              {#let url = 'https://api.github.com/repos/{% user_display user %}/' + repo_name;#}
+              let url = 'https://api.github.com/repos/' + owner + '/' + repo_name;
+                {#console.log(current_token);#}
+                await axios({
+                    url,
+                    type: 'GET',
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader("Authorization", current_token);
+                    },
                     })
                     .then(response => (
+                        this.repos.push({
+                            name: response.data['name'],
+                            owner: response.data['owner']['login'],
+                            programming_language: response.data["language"],
+                            stars: response.data["stargazers_count"],
+                            last_update: response.data['updated_at'],
+                            is_private: response.data["private"],
+                            details: '-',
+                        }),
                         console.log(response.data)
                         ))
                     .catch(function(error) {

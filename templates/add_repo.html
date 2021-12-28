@@ -1,0 +1,77 @@
+{% load socialaccount %}
+{% load account %}
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <title>Title</title>
+</head>
+<body>
+
+{% if user.is_authenticated %}
+    <div id="app">
+        <v-app>
+            <input type="text" v-model="name" placeholder="Repo name">
+            <p>Is repo private <input type="checkbox" v-model="is_private" label="Is repo private"></p>
+
+            <input type="text" v-model="owner" placeholder="Owner">
+            <v-btn text @click="submit()"> submit </v-btn>
+            <a href="/">Go to repos list</a>
+        </v-app>
+    </div>
+
+{% else %}
+<p>Please <a href="{% provider_login_url 'github' %}">Authenticate with GitHub</a></p>
+{% endif %}
+</body>
+
+<script>
+    var app = new Vue({
+      delimiters: ['[[', ']]'],
+      el: '#app',
+      vuetify: new Vuetify({
+            theme: {
+                themes: {
+                    light: {
+                        primary: '#009999',
+                    }
+                }
+            },
+        }),
+      data: {
+         name: '',
+          is_private: false,
+          owner: '',
+      },
+      methods: {
+          submit() {
+                let url = 'addRepo/';
+                var parameters = {
+                    name: this.name,
+                    is_private: this.is_private,
+                    owner: this.owner,
+                };
+                 axios.post(url, parameters, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                    .then(response => (
+                        alert(response.data['result'])
+                        ))
+                    .catch(function(error) {
+                        console.log(error);
+                    });
+            },
+      }
+    });
+  </script>
+</html>
